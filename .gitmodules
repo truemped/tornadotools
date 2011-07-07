@@ -1,0 +1,3 @@
+[submodule "develop-eggs/pyzmq"]
+	path = develop-eggs/pyzmq
+	url = https://github.com/zeromq/pyzmq.git
