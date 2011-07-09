@@ -35,7 +35,10 @@ setup(
         'pycurl>=7.19.0',
     ],
     tests_require = tests_require,
-    extras_require = {'test': tests_require},
+    extras_require = {
+        'test': tests_require,
+        'mongrel2': ['pyzmq>=2.1.7','tnetstring>=0.2.0'],
+    },
     entry_points = {
         'console_scripts' : [
         ]
