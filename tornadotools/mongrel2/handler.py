@@ -22,6 +22,7 @@ import uuid
 from tornado.httpserver import HTTPRequest
 
 import zmq
+from zmq.eventloop import stack_context
 from zmq.eventloop.ioloop import IOLoop
 from zmq.eventloop.zmqstream import ZMQStream
 
