@@ -1,0 +1,181 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Mongrel2 handler for Tornado &mdash; Tornado Tools</title>
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/print.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/theme_extras.js"></script>
+    <link rel="top" title="Tornado Tools" href="index.html" />
+    <link rel="prev" title="adisp" href="adisp.html" /> 
+  </head>
+  <body>
+      <div class="header"><h1 class="heading"><a href="index.html">
+          <span>Tornado Tools</span></a></h1>
+        <h2 class="heading"><span>Mongrel2 handler for Tornado</span></h2>
+      </div>
+      <div class="topnav">
+      
+        <p>
+        «&#160;&#160;<a href="adisp.html">adisp</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="module-tornadotools.mongrel2">
+<span id="mongrel2-handler-for-tornado"></span><h1>Mongrel2 handler for Tornado<a class="headerlink" href="#module-tornadotools.mongrel2" title="Permalink to this headline">¶</a></h1>
+<p>A Mongrel2 handler for Tornado based web apps.</p>
+<p><strong>Please note that this is considered EXPERIMENTAL!</strong> Any feedback is very
+welcome! Add <a class="reference external" href="https://github.com/truemped/tornadotools/issues">issues</a> or fork the code at <a class="reference external" href="https://github.com/truemped/tornadotools">Github</a>!</p>
+<p>Usage is quite simple:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">tornadotools.mongrel2.handler</span> <span class="kn">import</span> <span class="n">Mongrel2Handler</span>
+<span class="kn">from</span> <span class="nn">zmq.eventloop.ioloop</span> <span class="kn">import</span> <span class="n">IOLoop</span>
+<span class="kn">from</span> <span class="nn">zmq.eventloop.ioloop</span> <span class="kn">import</span> <span class="n">install</span> <span class="k">as</span> <span class="n">install_ioloop</span>
+
+<span class="c"># install the zmq version of the IOLoop</span>
+<span class="n">install_ioloop</span><span class="p">()</span>
+
+<span class="n">l</span> <span class="o">=</span> <span class="n">IOLoop</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+
+<span class="c"># create the handler with the `tornado.web.Application`</span>
+<span class="n">handler</span> <span class="o">=</span> <span class="n">Mongrel2Handler</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="s">&quot;tcp://127.0.0.1:9999&quot;</span><span class="p">,</span> <span class="s">&quot;tcp://127.0.0.1:9998&quot;</span><span class="p">,</span> <span class="n">io_loop</span><span class="o">=</span><span class="n">l</span><span class="p">)</span>
+
+<span class="c"># start listening for incoming messages from Mongrel2</span>
+<span class="n">handler</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+<span class="c"># enter the ioloop</span>
+<span class="n">l</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The Mongrel2 configuration could be as simple as this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">test_handler</span> <span class="o">=</span> <span class="n">Handler</span><span class="p">(</span>
+    <span class="n">send_spec</span> <span class="o">=</span> <span class="s">&quot;tcp://127.0.0.1:9999&quot;</span><span class="p">,</span>
+    <span class="n">send_ident</span> <span class="o">=</span> <span class="s">&quot;760deb97-b486-4e6a-b801-63fc01e93259&quot;</span><span class="p">,</span>
+    <span class="n">recv_spec</span> <span class="o">=</span> <span class="s">&quot;tcp://127.0.0.1:9998&quot;</span><span class="p">,</span>
+    <span class="n">recv_ident</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+<span class="p">)</span>
+
+<span class="n">test</span> <span class="o">=</span> <span class="n">Server</span><span class="p">(</span>
+    <span class="n">uuid</span> <span class="o">=</span> <span class="s">&quot;08eb25ae-50ef-43e2-bb3d-cf70437418fa&quot;</span><span class="p">,</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;Test&quot;</span><span class="p">,</span>
+
+    <span class="n">chroot</span> <span class="o">=</span> <span class="s">&quot;./&quot;</span><span class="p">,</span>
+    <span class="n">pid_file</span> <span class="o">=</span> <span class="s">&quot;/run/dev.pid&quot;</span><span class="p">,</span>
+    <span class="n">access_log</span> <span class="o">=</span> <span class="s">&quot;/logs/dev-access.log&quot;</span><span class="p">,</span>
+    <span class="n">error_log</span> <span class="o">=</span> <span class="s">&quot;/logs/dev-error.log&quot;</span><span class="p">,</span>
+
+    <span class="n">default_host</span> <span class="o">=</span> <span class="s">&quot;localhost&quot;</span><span class="p">,</span>
+    <span class="n">port</span> <span class="o">=</span> <span class="mi">6767</span><span class="p">,</span>
+
+    <span class="n">hosts</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">Host</span><span class="p">(</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;localhost&quot;</span><span class="p">,</span>
+            <span class="n">routes</span><span class="o">=</span><span class="p">{</span>
+                <span class="s">&quot;/&quot;</span><span class="p">:</span> <span class="n">test_handler</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+
+<span class="n">servers</span> <span class="o">=</span> <span class="p">[</span><span class="n">test</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="section" id="module-tornadotools.mongrel2.handler">
+<span id="api-documentation"></span><h2>API Documentation<a class="headerlink" href="#module-tornadotools.mongrel2.handler" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tornadotools.mongrel2.handler.Mongrel2Handler">
+<em class="property">class </em><tt class="descclassname">tornadotools.mongrel2.handler.</tt><tt class="descname">Mongrel2Handler</tt><big>(</big><em>request_callback</em>, <em>pull_addr</em>, <em>pub_addr</em>, <em>io_loop=None</em>, <em>zmq_ctx=None</em>, <em>sender_id=None</em>, <em>xheaders=True</em>, <em>no_keep_alive=False</em><big>)</big><a class="reference internal" href="_modules/tornadotools/mongrel2/handler.html#Mongrel2Handler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tornadotools.mongrel2.handler.Mongrel2Handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Mongrel2 handler class for use with <cite>tornado.web.Application</cite>.</p>
+<dl class="method">
+<dt id="tornadotools.mongrel2.handler.Mongrel2Handler.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tornadotools/mongrel2/handler.html#Mongrel2Handler.start"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tornadotools.mongrel2.handler.Mongrel2Handler.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start to listen for incoming requests.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tornadotools.mongrel2.handler.MongrelConnection">
+<em class="property">class </em><tt class="descclassname">tornadotools.mongrel2.handler.</tt><tt class="descname">MongrelConnection</tt><big>(</big><em>m2req</em>, <em>stream</em>, <em>request_callback</em>, <em>no_keep_alive=False</em>, <em>xheaders=False</em><big>)</big><a class="reference internal" href="_modules/tornadotools/mongrel2/handler.html#MongrelConnection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tornadotools.mongrel2.handler.MongrelConnection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handles the connection to the Mongrel2 server.</p>
+<p>We execute the request callback and provide methods for sending data to the
+server/client and eventually finish the request and HTTP connection.</p>
+<dl class="method">
+<dt id="tornadotools.mongrel2.handler.MongrelConnection.finish">
+<tt class="descname">finish</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tornadotools/mongrel2/handler.html#MongrelConnection.finish"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tornadotools.mongrel2.handler.MongrelConnection.finish" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finish this connection.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tornadotools.mongrel2.handler.MongrelConnection.write">
+<tt class="descname">write</tt><big>(</big><em>chunk</em><big>)</big><a class="reference internal" href="_modules/tornadotools/mongrel2/handler.html#MongrelConnection.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tornadotools.mongrel2.handler.MongrelConnection.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a chunk of data to the server.</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-tornadotools.mongrel2.request"></span><dl class="class">
+<dt id="tornadotools.mongrel2.request.MongrelRequest">
+<em class="property">class </em><tt class="descclassname">tornadotools.mongrel2.request.</tt><tt class="descname">MongrelRequest</tt><big>(</big><em>sender</em>, <em>conn_id</em>, <em>path</em>, <em>headers</em>, <em>body</em><big>)</big><a class="reference internal" href="_modules/tornadotools/mongrel2/request.html#MongrelRequest"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tornadotools.mongrel2.request.MongrelRequest" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Mongrel2 request object.</p>
+<dl class="staticmethod">
+<dt id="tornadotools.mongrel2.request.MongrelRequest.parse">
+<em class="property">static </em><tt class="descname">parse</tt><big>(</big><em>msg</em><big>)</big><a class="reference internal" href="_modules/tornadotools/mongrel2/request.html#MongrelRequest.parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tornadotools.mongrel2.request.MongrelRequest.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper method for parsing a Mongrel2 request string and returning a new
+<cite>MongrelRequest</cite> instance.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tornadotools.mongrel2.request.MongrelRequest.should_close">
+<tt class="descname">should_close</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/tornadotools/mongrel2/request.html#MongrelRequest.should_close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tornadotools.mongrel2.request.MongrelRequest.should_close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether the HTTP connection of this request should be closed
+after the request is finished.</p>
+<p>We check for the <cite>Connection</cite> HTTP header and for the HTTP Version
+(only <cite>HTTP/1.1</cite> supports keep-alive.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav">
+      
+        <p>
+        «&#160;&#160;<a href="adisp.html">adisp</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer">
+        &copy; Copyright 2011, Daniel Truemper.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

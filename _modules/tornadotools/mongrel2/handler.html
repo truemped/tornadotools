@@ -1,0 +1,228 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tornadotools.mongrel2.handler &mdash; Tornado Tools</title>
+    <link rel="stylesheet" href="../../../_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/print.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/theme_extras.js"></script>
+    <link rel="top" title="Tornado Tools" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+      <div class="header"><h1 class="heading"><a href="../../../index.html">
+          <span>Tornado Tools</span></a></h1>
+        <h2 class="heading"><span>tornadotools.mongrel2.handler</span></h2>
+      </div>
+      <div class="topnav">
+      
+        <p>
+        <a class="uplink" href="../../../index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <h1>Source code for tornadotools.mongrel2.handler</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c"># Copyright (c) 2011 Daniel Truemper truemped@googlemail.com</span>
+<span class="c">#</span>
+<span class="c"># handler.py 07-Jul-2011</span>
+<span class="c">#</span>
+<span class="c"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c"># you may not use this file except in compliance with the License.</span>
+<span class="c"># You may obtain a copy of the License at</span>
+<span class="c">#</span>
+<span class="c"># http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c"># See the License for the specific language governing permissions and</span>
+<span class="c"># limitations under the License.</span>
+<span class="c"># under the License.</span>
+<span class="c">#</span>
+<span class="c">#</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+
+<span class="kn">from</span> <span class="nn">tornado.httpserver</span> <span class="kn">import</span> <span class="n">HTTPRequest</span>
+
+<span class="kn">import</span> <span class="nn">zmq</span>
+<span class="kn">from</span> <span class="nn">zmq.eventloop</span> <span class="kn">import</span> <span class="n">stack_context</span>
+<span class="kn">from</span> <span class="nn">zmq.eventloop.ioloop</span> <span class="kn">import</span> <span class="n">IOLoop</span>
+<span class="kn">from</span> <span class="nn">zmq.eventloop.zmqstream</span> <span class="kn">import</span> <span class="n">ZMQStream</span>
+
+<span class="kn">from</span> <span class="nn">.request</span> <span class="kn">import</span> <span class="n">MongrelRequest</span>
+
+
+<div class="viewcode-block" id="Mongrel2Handler"><a class="viewcode-back" href="../../../mongrel2.html#tornadotools.mongrel2.handler.Mongrel2Handler">[docs]</a><span class="k">class</span> <span class="nc">Mongrel2Handler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A Mongrel2 handler class for use with Tornado Applications.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request_callback</span><span class="p">,</span> <span class="n">pull_addr</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">pub_addr</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+        <span class="n">io_loop</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ctx</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">sender_id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">no_keep_alive</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">request_callback</span> <span class="o">=</span> <span class="n">request_callback</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">io_loop</span> <span class="o">=</span> <span class="n">io_loop</span> <span class="ow">or</span> <span class="n">IOLoop</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sender_id</span> <span class="o">=</span> <span class="n">sender_id</span> <span class="ow">or</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">no_keep_alive</span> <span class="o">=</span> <span class="n">no_keep_alive</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_zmq_context</span> <span class="o">=</span> <span class="n">ctx</span> <span class="ow">or</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Context</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_listening_stream</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sending_stream</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_started</span> <span class="o">=</span> <span class="bp">False</span>
+
+<div class="viewcode-block" id="Mongrel2Handler.add_m2_pair"><a class="viewcode-back" href="../../../mongrel2.html#tornadotools.mongrel2.handler.Mongrel2Handler.add_m2_pair">[docs]</a>    <span class="k">def</span> <span class="nf">add_m2_pair</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pull_addr</span><span class="p">,</span> <span class="n">pub_addr</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a Mongrel2 socket pair to the handler.</span>
+
+<span class="sd">        By calling `add_m2_pair` multiple times, you may listen to multiple</span>
+<span class="sd">        Mongrel2 servers.</span>
+
+<span class="sd">        `pull_addr` and `pub_addr` must be valid ZeroMQ socket identifiers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_listening_stream</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_listening_stream</span><span class="p">(</span><span class="n">pull_addr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sending_stream</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_sending_stream</span><span class="p">(</span><span class="n">pub_addr</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Mongrel2Handler.start"><a class="viewcode-back" href="../../../mongrel2.html#tornadotools.mongrel2.handler.Mongrel2Handler.start">[docs]</a>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Start to listen for incoming requests.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_started</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_listening_stream</span><span class="o">.</span><span class="n">on_recv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_recv_callback</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_started</span> <span class="o">=</span> <span class="bp">True</span>
+</div>
+    <span class="k">def</span> <span class="nf">_create_listening_stream</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pull_addr</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a stream listening for Requests. The `self._recv_callback`</span>
+<span class="sd">        method is asociated with incoming requests.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zmq_context</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">PULL</span><span class="p">)</span>
+        <span class="n">sock</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">pull_addr</span><span class="p">)</span>
+        <span class="n">stream</span> <span class="o">=</span> <span class="n">ZMQStream</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="n">io_loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">io_loop</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">stream</span>
+
+    <span class="k">def</span> <span class="nf">_create_sending_stream</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pub_addr</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a `ZMQStream` for sending responses back to Mongrel2.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zmq_context</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">PUB</span><span class="p">)</span>
+        <span class="n">sock</span><span class="o">.</span><span class="n">setsockopt</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">IDENTITY</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sender_id</span><span class="p">)</span>
+        <span class="n">sock</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">pub_addr</span><span class="p">)</span>
+        <span class="n">stream</span> <span class="o">=</span> <span class="n">ZMQStream</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="n">io_loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">io_loop</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">stream</span>
+
+    <span class="k">def</span> <span class="nf">_recv_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Method is called when there is a message coming from a Mongrel2 server.</span>
+<span class="sd">        This message should be a valid Request String.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">m2req</span> <span class="o">=</span> <span class="n">MongrelRequest</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">MongrelConnection</span><span class="p">(</span><span class="n">m2req</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sending_stream</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_callback</span><span class="p">,</span>
+            <span class="n">no_keep_alive</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">no_keep_alive</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="MongrelConnection"><a class="viewcode-back" href="../../../mongrel2.html#tornadotools.mongrel2.handler.MongrelConnection">[docs]</a><span class="k">class</span> <span class="nc">MongrelConnection</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Handles the connection to the Mongrel2 server.</span>
+
+<span class="sd">    We execute the request callback and provide methods for sending data to the</span>
+<span class="sd">    server/client and eventually finish the request and HTTP connection.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m2req</span><span class="p">,</span> <span class="n">stream</span><span class="p">,</span> <span class="n">request_callback</span><span class="p">,</span> <span class="n">no_keep_alive</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+            <span class="n">xheaders</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m2req</span> <span class="o">=</span> <span class="n">m2req</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stream</span> <span class="o">=</span> <span class="n">stream</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request_callback</span> <span class="o">=</span> <span class="n">request_callback</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">no_keep_alive</span> <span class="o">=</span> <span class="n">no_keep_alive</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xheaders</span> <span class="o">=</span> <span class="n">xheaders</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_request</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_request_finished</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute</span> <span class="o">=</span> <span class="n">stack_context</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_begin_request</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_begin_request</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Actually start executing this request.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_request</span> <span class="o">=</span> <span class="n">HTTPRequest</span><span class="p">(</span><span class="n">connection</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+            <span class="n">method</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">m2req</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;METHOD&quot;</span><span class="p">),</span>
+            <span class="n">uri</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">m2req</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
+            <span class="n">version</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">m2req</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;VERSION&quot;</span><span class="p">),</span>
+            <span class="n">headers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">m2req</span><span class="o">.</span><span class="n">headers</span><span class="p">,</span>
+            <span class="n">remote_ip</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">m2req</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;x-forwarded-for&quot;</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m2req</span><span class="o">.</span><span class="n">body</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">req</span><span class="o">.</span><span class="n">body</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">m2req</span><span class="o">.</span><span class="n">body</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">request_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MongrelConnection.write"><a class="viewcode-back" href="../../../mongrel2.html#tornadotools.mongrel2.handler.MongrelConnection.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chunk</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Write a chunk of data to the server.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="MongrelConnection.finish"><a class="viewcode-back" href="../../../mongrel2.html#tornadotools.mongrel2.handler.MongrelConnection.finish">[docs]</a>    <span class="k">def</span> <span class="nf">finish</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Finish this connection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">,</span> <span class="s">&quot;Request closed&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_request_finished</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">m2req</span><span class="o">.</span><span class="n">should_close</span><span class="p">()</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_keep_alive</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_send</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_request</span> <span class="o">=</span> <span class="bp">None</span>
+</div>
+    <span class="k">def</span> <span class="nf">_send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Raw send to the given connection ID at the given uuid, mostly used </span>
+<span class="sd">        internally.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">uuid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">m2req</span><span class="o">.</span><span class="n">sender</span>
+        <span class="n">conn_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">m2req</span><span class="o">.</span><span class="n">conn_id</span>
+
+        <span class="n">header</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> </span><span class="si">%d</span><span class="s">:</span><span class="si">%s</span><span class="s">,&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">uuid</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">conn_id</span><span class="p">)),</span> <span class="nb">str</span><span class="p">(</span><span class="n">conn_id</span><span class="p">))</span>
+        <span class="n">zmq_message</span> <span class="o">=</span> <span class="n">header</span> <span class="o">+</span> <span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">msg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">zmq_message</span><span class="p">)</span></div>
+</pre></div>
+
+      </div>
+      <div class="bottomnav">
+      
+        <p>
+        <a class="uplink" href="../../../index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer">
+        &copy; Copyright 2011, Daniel Truemper.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

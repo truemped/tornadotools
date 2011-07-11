@@ -1,0 +1,157 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>adisp &mdash; Tornado Tools</title>
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/print.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/theme_extras.js"></script>
+    <link rel="top" title="Tornado Tools" href="index.html" />
+    <link rel="next" title="Mongrel2 handler for Tornado" href="mongrel2.html" />
+    <link rel="prev" title="Tornado Tools’s documentation" href="index.html" /> 
+  </head>
+  <body>
+      <div class="header"><h1 class="heading"><a href="index.html">
+          <span>Tornado Tools</span></a></h1>
+        <h2 class="heading"><span>adisp</span></h2>
+      </div>
+      <div class="topnav">
+      
+        <p>
+        «&#160;&#160;<a href="index.html">Tornado Tools&#8217;s documentation</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="mongrel2.html">Mongrel2 handler for Tornado</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="module-tornadotools.adisp">
+<span id="adisp"></span><h1>adisp<a class="headerlink" href="#module-tornadotools.adisp" title="Permalink to this headline">¶</a></h1>
+<p>Adisp is a library that allows structuring code with asynchronous calls and
+callbacks without defining callbacks as separate functions. The code then
+becomes sequential and easy to read. The library is not a framework by itself
+and can be used in other environments that provides asynchronous working model
+(see an example with Tornado server in proxy_example.py).</p>
+<div class="section" id="organizing-calling-code">
+<h2>Organizing calling code<a class="headerlink" href="#organizing-calling-code" title="Permalink to this headline">¶</a></h2>
+<p>All the magic is done with Python 2.5 decorators that allow for control flow to
+leave a function, do sometihing else for some time and then return into the
+calling function with a result. So the function that makes asynchronous calls
+should look like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@process</span>
+<span class="k">def</span> <span class="nf">my_handler</span><span class="p">():</span>
+   <span class="n">response</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">some_async_func</span><span class="p">()</span>
+   <span class="n">data</span> <span class="o">=</span> <span class="n">parse_response</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+   <span class="n">result</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">some_other_async_func</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+   <span class="n">store_result</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Each <cite>yield</cite> is where the function returns and lets the framework around it to
+do its job. And the code after <cite>yield</cite> is what usually goes in a callback.</p>
+<p>The <tt class="docutils literal"><span class="pre">&#64;process</span></tt> decorator is needed around such a function. It makes it callable
+as an ordinary function and takes care of dispatching callback calls back into
+it.</p>
+</div>
+<div class="section" id="writing-asynchronous-function">
+<h2>Writing asynchronous function<a class="headerlink" href="#writing-asynchronous-function" title="Permalink to this headline">¶</a></h2>
+<p>In the example above functions <tt class="docutils literal"><span class="pre">some_async_func</span></tt> and
+<tt class="docutils literal"><span class="pre">some_other_async_func</span></tt> are those that actually run an asynchronous process.
+They should follow two conditions:</p>
+<ul class="simple">
+<li>accept a <tt class="docutils literal"><span class="pre">callback</span></tt> parameter with a callback function that they should call
+after an asynchronous process is finished</li>
+<li>a callback should be called with one parameter &#8211; the result</li>
+<li>be wrapped in the <tt class="docutils literal"><span class="pre">&#64;async</span></tt> decorator</li>
+</ul>
+<p>The <tt class="docutils literal"><span class="pre">&#64;async</span></tt> decorator makes a function call lazy allowing the <tt class="docutils literal"><span class="pre">&#64;process</span></tt> that
+calls it to provide a callback to call.</p>
+<p>Using async with <tt class="docutils literal"><span class="pre">&#64;-syntax</span></tt> is most convenient when you write your own
+asynchronous function (and can make your callback parameter to be named
+&#8220;callback&#8221;). But when you want to call some library function you can wrap it in
+async in place.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># call http.fetch(url, callback=callback)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">async</span><span class="p">(</span><span class="n">http</span><span class="o">.</span><span class="n">fetch</span><span class="p">)</span>
+
+<span class="c"># call http.fetch(url, cb=safewrap(callback))</span>
+<span class="n">result</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">async</span><span class="p">(</span><span class="n">http</span><span class="o">.</span><span class="n">fetch</span><span class="p">,</span> <span class="n">cbname</span><span class="o">=</span><span class="s">&#39;cb&#39;</span><span class="p">,</span> <span class="n">cbwrapper</span><span class="o">=</span><span class="n">safewrap</span><span class="p">)(</span><span class="n">url</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here you can use two optional parameters for async:</p>
+<ul class="simple">
+<li><cite>cbname</cite>: a name of a parameter in which the function expects callbacks</li>
+<li><cite>cbwrapper</cite>: a wrapper for the callback iself that will be applied before
+calling it</li>
+</ul>
+</div>
+<div class="section" id="chain-calls">
+<h2>Chain calls<a class="headerlink" href="#chain-calls" title="Permalink to this headline">¶</a></h2>
+<p><tt class="docutils literal"><span class="pre">&#64;async</span></tt> function can also be <tt class="docutils literal"><span class="pre">&#64;process</span></tt>&#8216;es allowing to effectively chain
+asynchronous calls as it can be done with normal functions. In this case the
+<tt class="docutils literal"><span class="pre">&#64;async</span></tt> decorator shuold be the outer one:</p>
+<div class="highlight-python"><pre>@async
+@process
+def async_calling_other_asyncs(arg, callback):
+    # ....</pre>
+</div>
+</div>
+<div class="section" id="multiple-asynchronous-calls">
+<h2>Multiple asynchronous calls<a class="headerlink" href="#multiple-asynchronous-calls" title="Permalink to this headline">¶</a></h2>
+<p>The library also allows to call multiple asynchronous functions in parallel and
+get all their result for processing at once:</p>
+<div class="highlight-python"><pre>@async
+def async_http_get(url, callback):
+    # get url asynchronously
+    # call callback(response) at the end
+
+@process
+def get_stat():
+    urls = ['http://.../', 'http://.../', ... ]
+    responses = yield map(async_http_get, urls)</pre>
+</div>
+<p>After <em>all</em> the asynchronous calls will complete <tt class="docutils literal"><span class="pre">responses</span></tt> will be a list of
+responses corresponding to given urls.</p>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav">
+      
+        <p>
+        «&#160;&#160;<a href="index.html">Tornado Tools&#8217;s documentation</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="mongrel2.html">Mongrel2 handler for Tornado</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer">
+        &copy; Copyright 2011, Daniel Truemper.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>
