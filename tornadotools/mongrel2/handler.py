@@ -107,22 +107,16 @@ class MongrelConnection(object):
     server/client and eventually finish the request and HTTP connection.
     """
 
-    MessageTrackers = {}
-    """
-    A mapping between messages sent and their respective `MessageTacker`. This
-    helps us checking if we should close the connection after a chunk of data
-    has been sent to M2.
-    """
-
-    def __init__(self, m2req, stream, request_callback, no_keep_alive=False)
+    def __init__(self, m2req, stream, request_callback, no_keep_alive=False,
+            xheaders=False):
         self.m2req = m2req
         self.stream = stream
         self.request_callback = request_callback
         self.no_keep_alive = no_keep_alive
+        self.xheaders = xheaders
 
         self._request = None
         self._request_finished = False
-        self._message_trackers = []
 
         self._execute = stack_context.wrap(self._begin_request)
         self._execute()
@@ -136,7 +130,7 @@ class MongrelConnection(object):
             uri=self.m2req.path,
             version=self.m2req.headers.get("VERSION"),
             headers=self.m2req.headers,
-            remote_ip="")
+            remote_ip=self.m2req.headers.get("x-forwarded-for"))
 
         if len(self.m2req.body) > 0:
             req.body = self.m2req.body
@@ -155,35 +149,6 @@ class MongrelConnection(object):
         """
         assert self._request, "Request closed"
         self._request_finished = True
-        if not self._still_sending()
-            self._finish_request()
-
-    def _still_sending(self):
-        """
-        Check if we have `MessageTracker` with pending messages.
-        """
-        for tracker in self._message_trackers:
-            if not tracker.done():
-                return True
-            else:
-                self._message_trackers.remove(tracker)
-
-        return False
-
-    def maybe_finish(self):
-        """
-        When ZeroMQ has sent a message, maybe we need to check if the HTTP
-        connection needs to be closed.
-        """
-        if self._request_finished and not self._still_sending():
-            self._finish_request()
-
-    def _finish_request(self):
-        """
-        Maybe we should close the HTTP connection. If so, do this here. If not,
-        we can destroy this connection and let the `Mongrel2Handler` handle the
-        next request.
-        """
         if self.m2req.should_close() or self.no_keep_alive:
             self._send("")
         self._request = None
@@ -198,11 +163,4 @@ class MongrelConnection(object):
 
         header = "%s %d:%s," % (uuid, len(str(conn_id)), str(conn_id))
         zmq_message = header + ' ' + msg
-
-        if msg = "":
-            # kill messages do not need to be tracked
-            self.stream.send(zmq_message)
-        else:
-            tracker = self.stream.send(zmq_message, copy=False, track=True)
-            self._message_trackers.append(tracker)
-            MongrelConnection.MessageTrackers[zmq_message] = (self, tracker)
+        self.stream.send(zmq_message)
