@@ -44,13 +44,13 @@ class MongrelRequest(object):
     @staticmethod
     def parse(msg):
         sender, conn_id, path, rest = msg.split(' ', 3)
-        headers, rest = tnetstring.loads(rest)
-        body, _ = tnetstring.loads(rest)
+        headers, rest = tnetstring.pop(rest)
+        body, _ = tnetstring.pop(rest)
 
         if type(headers) is str:
             headers = json.loads(headers)
 
-        return Request(sender, conn_id, path, headers, body)
+        return MongrelRequest(sender, conn_id, path, headers, body)
 
     def is_disconnect(self):
         if self.headers.get('METHOD') == 'JSON':
