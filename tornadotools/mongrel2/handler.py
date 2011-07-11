@@ -72,7 +72,7 @@ class Mongrel2Handler(object):
         Create a stream listening for Requests. The `self._recv_callback`
         method is asociated with incoming requests.
         """
-        sock = zmq.socket(zmq.PULL)
+        sock = self._zmq_context.socket(zmq.PULL)
         sock.connect(pull_addr)
         stream = ZMQStream(sock, io_loop=self.io_loop)
 
@@ -82,11 +82,10 @@ class Mongrel2Handler(object):
         """
         Create a `ZMQStream` for sending responses back to Mongrel2.
         """
-        sock = zmq.socket(zmq.PUB)
+        sock = self._zmq_context.socket(zmq.PUB)
         sock.setsockopt(zmq.IDENTITY, self.sender_id)
         sock.connect(pub_addr)
         stream = ZMQStream(sock, io_loop=self.io_loop)
-        stream.on_send(self._handle_message_sent)
 
         return stream
 
@@ -97,16 +96,7 @@ class Mongrel2Handler(object):
         """
         m2req = MongrelRequest.parse(msg[0])
         MongrelConnection(m2req, self._sending_stream, self.request_callback,
-            no_keep_alive=no_keep_alive)
-
-    def _handle_message_sent(self, msg, tracker):
-        """
-        When ZeroMQ has sent a message we try to find the corresponding
-        `MongrelConnection` and call its `maybe_finish` method.
-        """
-        if msg[0] in MongrelConnection.MessageTrackers:
-            (conn, tracker) = MongrelConnection.MessageTrackers[msg[0]]
-            conn.maybe_finish()
+            no_keep_alive=self.no_keep_alive)
 
 
 class MongrelConnection(object):
