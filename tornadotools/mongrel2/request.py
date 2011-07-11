@@ -26,7 +26,7 @@ import tnetstring
 
 class MongrelRequest(object):
     """
-    A simple wrapper around the standard `HTTPRequest`.
+    A Mongrel2 request object.
     """
 
     def __init__(self, sender, conn_id, path, headers, body):
@@ -43,6 +43,10 @@ class MongrelRequest(object):
 
     @staticmethod
     def parse(msg):
+        """
+        Helper method for parsing a Mongrel2 request string and returning a new
+        `MongrelRequest` instance.
+        """
         sender, conn_id, path, rest = msg.split(' ', 3)
         headers, rest = tnetstring.pop(rest)
         body, _ = tnetstring.pop(rest)
@@ -57,6 +61,13 @@ class MongrelRequest(object):
             return self.data['type'] == 'disconnect'
 
     def should_close(self):
+        """
+        Check whether the HTTP connection of this request should be closed
+        after the request is finished.
+
+        We check for the `Connection` HTTP header and for the HTTP Version
+        (only `HTTP/1.1` supports keep-alive.
+        """
         if self.headers.get('connection') == 'close':
             return True
         elif 'content-length' in self.headers or \
