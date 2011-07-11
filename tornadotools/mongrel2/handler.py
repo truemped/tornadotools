@@ -31,33 +31,22 @@ from .request import MongrelRequest
 
 class Mongrel2Handler(object):
     """
-    A Mongrel2 handler class for use with Tornado Applications.
+    A Mongrel2 handler class for use with `tornado.web.Application`.
     """
 
-    def __init__(self, request_callback, pull_addr=None, pub_addr=None,
-        io_loop=None, ctx=None, sender_id=None, no_keep_alive=False):
+    def __init__(self, request_callback, pull_addr, pub_addr, io_loop=None,
+            zmq_ctx=None, sender_id=None, xheaders=True, no_keep_alive=False):
 
         self.request_callback = request_callback
         self.io_loop = io_loop or IOLoop.instance()
         self.sender_id = sender_id or str(uuid.uuid4())
+        self.xheaders = xheaders
         self.no_keep_alive = no_keep_alive
 
-        self._zmq_context = ctx or zmq.Context()
-        self._listening_stream = None
-        self._sending_stream = None
-        self._started = False
-
-    def add_m2_pair(self, pull_addr, pub_addr):
-        """
-        Add a Mongrel2 socket pair to the handler.
-
-        By calling `add_m2_pair` multiple times, you may listen to multiple
-        Mongrel2 servers.
-
-        `pull_addr` and `pub_addr` must be valid ZeroMQ socket identifiers.
-        """
+        self._zmq_context = zmq_ctx or zmq.Context()
         self._listening_stream = self._create_listening_stream(pull_addr)
         self._sending_stream = self._create_sending_stream(pub_addr)
+        self._started = False
 
     def start(self):
         """
@@ -96,7 +85,7 @@ class Mongrel2Handler(object):
         """
         m2req = MongrelRequest.parse(msg[0])
         MongrelConnection(m2req, self._sending_stream, self.request_callback,
-            no_keep_alive=self.no_keep_alive)
+            no_keep_alive=self.no_keep_alive, xheaders=self.xheaders)
 
 
 class MongrelConnection(object):
