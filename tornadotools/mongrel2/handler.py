@@ -124,7 +124,7 @@ class MongrelConnection(object):
             remote_ip=headers.get("x-forwarded-for"))
 
         if len(self.m2req.body) > 0:
-            req.body = self.m2req.body
+            self._request.body = self.m2req.body
 
         if self.m2req.is_disconnect():
             self.finish()
