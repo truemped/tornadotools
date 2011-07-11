@@ -76,34 +76,23 @@
 
 <div class="viewcode-block" id="Mongrel2Handler"><a class="viewcode-back" href="../../../mongrel2.html#tornadotools.mongrel2.handler.Mongrel2Handler">[docs]</a><span class="k">class</span> <span class="nc">Mongrel2Handler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A Mongrel2 handler class for use with Tornado Applications.</span>
+<span class="sd">    A Mongrel2 handler class for use with `tornado.web.Application`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request_callback</span><span class="p">,</span> <span class="n">pull_addr</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">pub_addr</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-        <span class="n">io_loop</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ctx</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">sender_id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">no_keep_alive</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request_callback</span><span class="p">,</span> <span class="n">pull_addr</span><span class="p">,</span> <span class="n">pub_addr</span><span class="p">,</span> <span class="n">io_loop</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+            <span class="n">zmq_ctx</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">sender_id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">xheaders</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">no_keep_alive</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">request_callback</span> <span class="o">=</span> <span class="n">request_callback</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">io_loop</span> <span class="o">=</span> <span class="n">io_loop</span> <span class="ow">or</span> <span class="n">IOLoop</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sender_id</span> <span class="o">=</span> <span class="n">sender_id</span> <span class="ow">or</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xheaders</span> <span class="o">=</span> <span class="n">xheaders</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">no_keep_alive</span> <span class="o">=</span> <span class="n">no_keep_alive</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_zmq_context</span> <span class="o">=</span> <span class="n">ctx</span> <span class="ow">or</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Context</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_listening_stream</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_sending_stream</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_started</span> <span class="o">=</span> <span class="bp">False</span>
-
-<div class="viewcode-block" id="Mongrel2Handler.add_m2_pair"><a class="viewcode-back" href="../../../mongrel2.html#tornadotools.mongrel2.handler.Mongrel2Handler.add_m2_pair">[docs]</a>    <span class="k">def</span> <span class="nf">add_m2_pair</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pull_addr</span><span class="p">,</span> <span class="n">pub_addr</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Add a Mongrel2 socket pair to the handler.</span>
-
-<span class="sd">        By calling `add_m2_pair` multiple times, you may listen to multiple</span>
-<span class="sd">        Mongrel2 servers.</span>
-
-<span class="sd">        `pull_addr` and `pub_addr` must be valid ZeroMQ socket identifiers.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_zmq_context</span> <span class="o">=</span> <span class="n">zmq_ctx</span> <span class="ow">or</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Context</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_listening_stream</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_listening_stream</span><span class="p">(</span><span class="n">pull_addr</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sending_stream</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_sending_stream</span><span class="p">(</span><span class="n">pub_addr</span><span class="p">)</span>
-</div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_started</span> <span class="o">=</span> <span class="bp">False</span>
+
 <div class="viewcode-block" id="Mongrel2Handler.start"><a class="viewcode-back" href="../../../mongrel2.html#tornadotools.mongrel2.handler.Mongrel2Handler.start">[docs]</a>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Start to listen for incoming requests.</span>
@@ -141,7 +130,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">m2req</span> <span class="o">=</span> <span class="n">MongrelRequest</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="n">MongrelConnection</span><span class="p">(</span><span class="n">m2req</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sending_stream</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_callback</span><span class="p">,</span>
-            <span class="n">no_keep_alive</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">no_keep_alive</span><span class="p">)</span>
+            <span class="n">no_keep_alive</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">no_keep_alive</span><span class="p">,</span> <span class="n">xheaders</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">xheaders</span><span class="p">)</span>
 
 </div>
 <div class="viewcode-block" id="MongrelConnection"><a class="viewcode-back" href="../../../mongrel2.html#tornadotools.mongrel2.handler.MongrelConnection">[docs]</a><span class="k">class</span> <span class="nc">MongrelConnection</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -170,17 +159,36 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Actually start executing this request.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">m2req</span><span class="o">.</span><span class="n">headers</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">_request</span> <span class="o">=</span> <span class="n">HTTPRequest</span><span class="p">(</span><span class="n">connection</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
-            <span class="n">method</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">m2req</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;METHOD&quot;</span><span class="p">),</span>
+            <span class="n">method</span><span class="o">=</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;METHOD&quot;</span><span class="p">),</span>
             <span class="n">uri</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">m2req</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
-            <span class="n">version</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">m2req</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;VERSION&quot;</span><span class="p">),</span>
-            <span class="n">headers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">m2req</span><span class="o">.</span><span class="n">headers</span><span class="p">,</span>
-            <span class="n">remote_ip</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">m2req</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;x-forwarded-for&quot;</span><span class="p">))</span>
+            <span class="n">version</span><span class="o">=</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;VERSION&quot;</span><span class="p">),</span>
+            <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span>
+            <span class="n">remote_ip</span><span class="o">=</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;x-forwarded-for&quot;</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m2req</span><span class="o">.</span><span class="n">body</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">req</span><span class="o">.</span><span class="n">body</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">m2req</span><span class="o">.</span><span class="n">body</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="o">.</span><span class="n">body</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">m2req</span><span class="o">.</span><span class="n">body</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">request_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">m2req</span><span class="o">.</span><span class="n">is_disconnect</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span>
+
+        <span class="k">elif</span> <span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;x-mongrel2-upload-done&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">):</span>
+            <span class="c"># there has been a file upload.</span>
+            <span class="n">expected</span> <span class="o">=</span> <span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;x-mongrel2-upload-start&quot;</span><span class="p">,</span> <span class="s">&quot;BAD&quot;</span><span class="p">)</span>
+            <span class="n">upload</span> <span class="o">=</span> <span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;x-mongrel2-upload-done&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">expected</span> <span class="o">==</span> <span class="n">upload</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">request_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;x-mongrel2-upload-start&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">):</span>
+            <span class="c"># this is just a notification that a file upload has started. Do</span>
+            <span class="c"># nothing for now!</span>
+            <span class="k">pass</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">request_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">)</span>
 
 <div class="viewcode-block" id="MongrelConnection.write"><a class="viewcode-back" href="../../../mongrel2.html#tornadotools.mongrel2.handler.MongrelConnection.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chunk</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -222,7 +230,7 @@
 
     <div class="footer">
         &copy; Copyright 2011, Daniel Truemper.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
     </div>
   </body>
 </html>

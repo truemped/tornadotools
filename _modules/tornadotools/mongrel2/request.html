@@ -71,7 +71,7 @@
 
 <div class="viewcode-block" id="MongrelRequest"><a class="viewcode-back" href="../../../mongrel2.html#tornadotools.mongrel2.request.MongrelRequest">[docs]</a><span class="k">class</span> <span class="nc">MongrelRequest</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A simple wrapper around the standard `HTTPRequest`.</span>
+<span class="sd">    A Mongrel2 request object.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sender</span><span class="p">,</span> <span class="n">conn_id</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">body</span><span class="p">):</span>
@@ -88,6 +88,10 @@
 
     <span class="nd">@staticmethod</span>
 <div class="viewcode-block" id="MongrelRequest.parse"><a class="viewcode-back" href="../../../mongrel2.html#tornadotools.mongrel2.request.MongrelRequest.parse">[docs]</a>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Helper method for parsing a Mongrel2 request string and returning a new</span>
+<span class="sd">        `MongrelRequest` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">sender</span><span class="p">,</span> <span class="n">conn_id</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">rest</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
         <span class="n">headers</span><span class="p">,</span> <span class="n">rest</span> <span class="o">=</span> <span class="n">tnetstring</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">rest</span><span class="p">)</span>
         <span class="n">body</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">tnetstring</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">rest</span><span class="p">)</span>
@@ -102,6 +106,13 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;disconnect&#39;</span>
 
 <div class="viewcode-block" id="MongrelRequest.should_close"><a class="viewcode-back" href="../../../mongrel2.html#tornadotools.mongrel2.request.MongrelRequest.should_close">[docs]</a>    <span class="k">def</span> <span class="nf">should_close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check whether the HTTP connection of this request should be closed</span>
+<span class="sd">        after the request is finished.</span>
+
+<span class="sd">        We check for the `Connection` HTTP header and for the HTTP Version</span>
+<span class="sd">        (only `HTTP/1.1` supports keep-alive.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;connection&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;close&#39;</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">True</span>
         <span class="k">elif</span> <span class="s">&#39;content-length&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">headers</span> <span class="ow">or</span> \
@@ -124,7 +135,7 @@
 
     <div class="footer">
         &copy; Copyright 2011, Daniel Truemper.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
     </div>
   </body>
 </html>

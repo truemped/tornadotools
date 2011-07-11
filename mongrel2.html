@@ -99,9 +99,32 @@ welcome! Add <a class="reference external" href="https://github.com/truemped/tor
     <span class="p">]</span>
 <span class="p">)</span>
 
+<span class="n">settings</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&quot;upload.temp_store&quot;</span> <span class="p">:</span> <span class="s">&quot;/tmp/mongrel2-uploads/upload.XXXXXX&quot;</span>
+<span class="p">}</span>
+
 <span class="n">servers</span> <span class="o">=</span> <span class="p">[</span><span class="n">test</span><span class="p">]</span>
 </pre></div>
 </div>
+<p>When uploading data (files, e.g.), note that in contrast to plain Tornado, the
+actual file storage is handled by Mongrel2 itself. What you should do in your
+request handler is something like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Handler</span><span class="p">(</span><span class="n">tornado</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">RequestHandler</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;x-mongrel2-upload-done&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">):</span>
+            <span class="c"># file was large, thus handled by mongrel2</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;x-mongrel2-upload-done&quot;</span><span class="p">)</span>
+            <span class="n">body</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">files</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c"># Tornado handled the file upload</span>
+            <span class="k">pass</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">body</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c"># small file?!</span>
+            <span class="k">pass</span>
+</pre></div>
+</div>
+<p>To keep Mongrel2 from handling the uploads, you simply have to remove the
+<cite>upload.temp_store</cite> setting from the config.</p>
 <div class="section" id="module-tornadotools.mongrel2.handler">
 <span id="api-documentation"></span><h2>API Documentation<a class="headerlink" href="#module-tornadotools.mongrel2.handler" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
@@ -175,7 +198,7 @@ after the request is finished.</p>
 
     <div class="footer">
         &copy; Copyright 2011, Daniel Truemper.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
     </div>
   </body>
 </html>
