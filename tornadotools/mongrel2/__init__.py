@@ -75,7 +75,32 @@ The Mongrel2 configuration could be as simple as this::
         ]
     )
 
+    settings = {
+        "upload.temp_store" : "/tmp/mongrel2-uploads/upload.XXXXXX"
+    }
+
     servers = [test]
+
+
+When uploading data (files, e.g.), note that in contrast to plain Tornado, the
+actual file storage is handled by Mongrel2 itself. What you should do in your
+request handler is something like this::
+
+    class Handler(tornado.web.RequestHandler):
+        def put(self):
+            if self.request.headers.get("x-mongrel2-upload-done", None):
+                # file was large, thus handled by mongrel2
+                filename = self.request.headers.get("x-mongrel2-upload-done")
+                body = open(filename, 'r').read()
+            elif len(self.request.files) > 0:
+                # Tornado handled the file upload
+                pass
+            elif len(self.request.body) > 0:
+                # small file?!
+                pass
+
+To keep Mongrel2 from handling the uploads, you simply have to remove the
+`upload.temp_store` setting from the config.
 """
 
 from .handler import Mongrel2Handler
