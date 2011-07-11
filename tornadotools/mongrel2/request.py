@@ -61,7 +61,7 @@ class MongrelRequest(object):
             return True
         elif 'content-length' in self.headers or \
             self.headers.get('METHOD') in ['HEAD', 'GET']:
-            return self.headers.get('connection') != 'Kepp-Alive'
+            return self.headers.get('connection') != 'keep-alive'
         elif self.headers.get('VERSION') == 'HTTP/1.0':
             return True
         else:
