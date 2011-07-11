@@ -39,7 +39,7 @@ class Mongrel2Handler(object):
 
         self.request_callback = request_callback
         self.io_loop = io_loop or IOLoop.instance()
-        self.sender_id = sender_id or uuid.uuid4()
+        self.sender_id = sender_id or str(uuid.uuid4())
         self.no_keep_alive = no_keep_alive
 
         self._zmq_context = ctx or zmq.Context()
