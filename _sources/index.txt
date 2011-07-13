@@ -17,6 +17,7 @@ Contents:
    :maxdepth: 1
 
    adisp
+   caching
    mongrel2
 
 Indices and tables

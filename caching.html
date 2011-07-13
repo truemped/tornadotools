@@ -1,0 +1,114 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>A caching decorator &mdash; Tornado Tools</title>
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/print.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/theme_extras.js"></script>
+    <link rel="top" title="Tornado Tools" href="index.html" />
+    <link rel="next" title="Mongrel2 handler for Tornado" href="mongrel2.html" />
+    <link rel="prev" title="adisp" href="adisp.html" /> 
+  </head>
+  <body>
+      <div class="header"><h1 class="heading"><a href="index.html">
+          <span>Tornado Tools</span></a></h1>
+        <h2 class="heading"><span>A caching decorator</span></h2>
+      </div>
+      <div class="topnav">
+      
+        <p>
+        «&#160;&#160;<a href="adisp.html">adisp</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="mongrel2.html">Mongrel2 handler for Tornado</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="module-tornadotools.caching">
+<span id="a-caching-decorator"></span><h1>A caching decorator<a class="headerlink" href="#module-tornadotools.caching" title="Permalink to this headline">¶</a></h1>
+<p>A caching decorator for asynchronous functions.</p>
+<p>The decorated function has to accept a <cite>callback</cite> parameter. The <cite>callback</cite>
+itself has to accept only one parameter, the <cite>result</cite>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">result_cb</span><span class="p">(</span><span class="n">result</span><span class="p">):</span>
+    <span class="k">print</span> <span class="n">result</span>
+
+<span class="nd">@Cache</span><span class="p">(</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="k">def</span> <span class="nf">get_async</span><span class="p">(</span><span class="n">argument1</span><span class="p">,</span> <span class="n">argument2</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">async_http_client</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">callback</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">get_cached</span><span class="p">():</span>
+    <span class="n">get_async</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span> <span class="n">result_cb</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can also combine the <cite>Cache</cite> decorator with the <cite>adisp</cite> methods:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@adisp.async</span>
+<span class="nd">@Cache</span><span class="p">(</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="k">def</span> <span class="nf">get_async</span><span class="p">(</span><span class="n">argument1</span><span class="p">,</span> <span class="n">argument2</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">async_http_client</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">callback</span><span class="p">)</span>
+
+<span class="nd">@adisp.process</span>
+<span class="k">def</span> <span class="nf">get_cached</span><span class="p">():</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">get_async</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span> <span class="n">result_cb</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If your keyword argument for the <cite>callback</cite> has a different name, you can
+change this in the decorator:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@Cache</span><span class="p">(</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">cbname</span><span class="o">=</span><span class="s">&quot;cb&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">get_async</span><span class="p">(</span><span class="n">argument1</span><span class="p">,</span> <span class="n">argument2</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">async_http_client</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">callback</span><span class="p">)</span>
+<span class="n">get_async</span> <span class="o">=</span> <span class="n">adisp</span><span class="o">.</span><span class="n">async</span><span class="p">(</span><span class="n">get_async</span><span class="p">,</span> <span class="n">cbname</span><span class="o">=</span><span class="s">&quot;cb&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>By default, the <cite>tornadotools.caching.cache_key</cite> method will be used to compute
+the key for the cache. You could also provide your own method:</p>
+<div class="highlight-python"><pre>def my_key_method(*args, **kwargs):
+    return kwargs.get('sessionid', cache_key(*args, **kwargs))
+
+@Cache(timedelta(hours=1), cache_key_method=my_key_method)
+def ...</pre>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav">
+      
+        <p>
+        «&#160;&#160;<a href="adisp.html">adisp</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="mongrel2.html">Mongrel2 handler for Tornado</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer">
+        &copy; Copyright 2011, Daniel Truemper.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>
