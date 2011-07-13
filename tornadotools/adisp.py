@@ -98,7 +98,7 @@ get all their result for processing at once::
 After *all* the asynchronous calls will complete ``responses`` will be a list of
 responses corresponding to given urls.
 '''
-from functools import partial
+from functools import partial, wraps
 
 class CallbackDispatcher(object):
     def __init__(self, generator):
@@ -135,11 +135,13 @@ class CallbackDispatcher(object):
         self._send_result(results, single)
 
 def process(func):
+    @wraps(func)
     def wrapper(*args, **kwargs):
         CallbackDispatcher(func(*args, **kwargs))
     return wrapper
 
 def async(func, cbname='callback', cbwrapper=lambda x: x):
+    @wraps(func)
     def wrapper(*args, **kwargs):
         def caller(callback):
             kwargs[cbname] = cbwrapper(callback)
