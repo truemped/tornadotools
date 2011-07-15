@@ -22,6 +22,8 @@ A caching decorator for asynchronous functions.
 The decorated function has to accept a `callback` parameter. The `callback`
 itself has to accept only one parameter, the `result`::
 
+    from tornadotools.caching import Cache
+
     def result_cb(result):
         print result
 
@@ -33,6 +35,8 @@ itself has to accept only one parameter, the `result`::
         get_async(1,2, result_cb)
 
 You can also combine the `Cache` decorator with the `adisp` methods::
+
+    from tornadotools.caching import Cache
 
     @adisp.async
     @Cache(timedelta(hours=1))
@@ -46,6 +50,8 @@ You can also combine the `Cache` decorator with the `adisp` methods::
 If your keyword argument for the `callback` has a different name, you can
 change this in the decorator::
 
+    from tornadotools.caching import Cache
+
     @Cache(timedelta(hours=1), cbname="cb")
     def get_async(argument1, argument2, callback=None):
         async_http_client.fetch(X, callback)
@@ -53,6 +59,8 @@ change this in the decorator::
 
 By default, the `tornadotools.caching.cache_key` method will be used to compute
 the key for the cache. You could also provide your own method::
+
+    from tornadotools.caching import Cache
 
     def my_key_method(*args, **kwargs):
         return kwargs.get('sessionid', cache_key(*args, **kwargs))

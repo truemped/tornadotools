@@ -25,6 +25,8 @@ The `Route` decorator stores all routes inside a class level list. You can then
 add all routes to the application using the `Route.routes` method. Some
 examples::
 
+    from tornadotools.route import Route
+
     @Route(r"/")
     class SimpleHandler(RequestHandler):
         pass
@@ -44,6 +46,8 @@ examples::
 
 Tornado also support multiple hosts. When you want to use this with the `Route`
 decorator, you have to create the `tornado.web.Application` like this::
+
+    from tornadotools.route import Route
 
     @Route(r"/.*", host="www\.example\.com")
     class HostHandler(RequestHandler):
