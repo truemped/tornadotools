@@ -51,7 +51,9 @@ initialization dict.</p>
 <p>The <cite>Route</cite> decorator stores all routes inside a class level list. You can then
 add all routes to the application using the <cite>Route.routes</cite> method. Some
 examples:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="nd">@Route</span><span class="p">(</span><span class="s">r&quot;/&quot;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">tornadotools.route</span> <span class="kn">import</span> <span class="n">Route</span>
+
+<span class="nd">@Route</span><span class="p">(</span><span class="s">r&quot;/&quot;</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">SimpleHandler</span><span class="p">(</span><span class="n">RequestHandler</span><span class="p">):</span>
     <span class="k">pass</span>
 
@@ -71,7 +73,9 @@ examples:</p>
 </div>
 <p>Tornado also support multiple hosts. When you want to use this with the <cite>Route</cite>
 decorator, you have to create the <cite>tornado.web.Application</cite> like this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="nd">@Route</span><span class="p">(</span><span class="s">r&quot;/.*&quot;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s">&quot;www\.example\.com&quot;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">tornadotools.route</span> <span class="kn">import</span> <span class="n">Route</span>
+
+<span class="nd">@Route</span><span class="p">(</span><span class="s">r&quot;/.*&quot;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s">&quot;www\.example\.com&quot;</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">HostHandler</span><span class="p">(</span><span class="n">RequestHandler</span><span class="p">):</span>
     <span class="k">pass</span>
 

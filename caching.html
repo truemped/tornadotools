@@ -52,7 +52,9 @@
 <p>A caching decorator for asynchronous functions.</p>
 <p>The decorated function has to accept a <cite>callback</cite> parameter. The <cite>callback</cite>
 itself has to accept only one parameter, the <cite>result</cite>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">result_cb</span><span class="p">(</span><span class="n">result</span><span class="p">):</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">tornadotools.caching</span> <span class="kn">import</span> <span class="n">Cache</span>
+
+<span class="k">def</span> <span class="nf">result_cb</span><span class="p">(</span><span class="n">result</span><span class="p">):</span>
     <span class="k">print</span> <span class="n">result</span>
 
 <span class="nd">@Cache</span><span class="p">(</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
@@ -64,7 +66,9 @@ itself has to accept only one parameter, the <cite>result</cite>:</p>
 </pre></div>
 </div>
 <p>You can also combine the <cite>Cache</cite> decorator with the <cite>adisp</cite> methods:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="nd">@adisp.async</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">tornadotools.caching</span> <span class="kn">import</span> <span class="n">Cache</span>
+
+<span class="nd">@adisp.async</span>
 <span class="nd">@Cache</span><span class="p">(</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
 <span class="k">def</span> <span class="nf">get_async</span><span class="p">(</span><span class="n">argument1</span><span class="p">,</span> <span class="n">argument2</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="n">async_http_client</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">callback</span><span class="p">)</span>
@@ -76,7 +80,9 @@ itself has to accept only one parameter, the <cite>result</cite>:</p>
 </div>
 <p>If your keyword argument for the <cite>callback</cite> has a different name, you can
 change this in the decorator:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="nd">@Cache</span><span class="p">(</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">cbname</span><span class="o">=</span><span class="s">&quot;cb&quot;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">tornadotools.caching</span> <span class="kn">import</span> <span class="n">Cache</span>
+
+<span class="nd">@Cache</span><span class="p">(</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">cbname</span><span class="o">=</span><span class="s">&quot;cb&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">get_async</span><span class="p">(</span><span class="n">argument1</span><span class="p">,</span> <span class="n">argument2</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="n">async_http_client</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">callback</span><span class="p">)</span>
 <span class="n">get_async</span> <span class="o">=</span> <span class="n">adisp</span><span class="o">.</span><span class="n">async</span><span class="p">(</span><span class="n">get_async</span><span class="p">,</span> <span class="n">cbname</span><span class="o">=</span><span class="s">&quot;cb&quot;</span><span class="p">)</span>
@@ -84,7 +90,9 @@ change this in the decorator:</p>
 </div>
 <p>By default, the <cite>tornadotools.caching.cache_key</cite> method will be used to compute
 the key for the cache. You could also provide your own method:</p>
-<div class="highlight-python"><pre>def my_key_method(*args, **kwargs):
+<div class="highlight-python"><pre>from tornadotools.caching import Cache
+
+def my_key_method(*args, **kwargs):
     return kwargs.get('sessionid', cache_key(*args, **kwargs))
 
 @Cache(timedelta(hours=1), cache_key_method=my_key_method)
