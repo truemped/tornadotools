@@ -1,0 +1,101 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Tornado routes &mdash; Tornado Tools</title>
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/print.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/theme_extras.js"></script>
+    <link rel="top" title="Tornado Tools" href="index.html" />
+    <link rel="prev" title="Caching asynchronous methods" href="caching.html" /> 
+  </head>
+  <body>
+      <div class="header"><h1 class="heading"><a href="index.html">
+          <span>Tornado Tools</span></a></h1>
+        <h2 class="heading"><span>Tornado routes</span></h2>
+      </div>
+      <div class="topnav">
+      
+        <p>
+        «&#160;&#160;<a href="caching.html">Caching asynchronous methods</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="module-tornadotools.route">
+<span id="tornado-routes"></span><h1>Tornado routes<a class="headerlink" href="#module-tornadotools.route" title="Permalink to this headline">¶</a></h1>
+<p>Decorator for a <cite>tornado.web.RequestHandler</cite> configuring the route and
+initialization dict.</p>
+<p>The <cite>Route</cite> decorator stores all routes inside a class level list. You can then
+add all routes to the application using the <cite>Route.routes</cite> method. Some
+examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@Route</span><span class="p">(</span><span class="s">r&quot;/&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">SimpleHandler</span><span class="p">(</span><span class="n">RequestHandler</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="nd">@Route</span><span class="p">(</span><span class="s">r&quot;/test_with_name&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;test&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">SimpleHandler2</span><span class="p">(</span><span class="n">RequestHandler</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="nd">@Route</span><span class="p">(</span><span class="s">r&quot;/test_with_init&quot;</span><span class="p">,</span> <span class="n">initialize</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;init&#39;</span><span class="p">:</span> <span class="s">&#39;dictionary&#39;</span><span class="p">})</span>
+<span class="k">class</span> <span class="nc">SimpleHandler3</span><span class="p">(</span><span class="n">RequestHandler</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Application</span><span class="p">([</span>
+    <span class="c"># other routes</span>
+    <span class="p">]</span> <span class="o">+</span> <span class="n">Route</span><span class="o">.</span><span class="n">routes</span><span class="p">()</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Tornado also support multiple hosts. When you want to use this with the <cite>Route</cite>
+decorator, you have to create the <cite>tornado.web.Application</cite> like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@Route</span><span class="p">(</span><span class="s">r&quot;/.*&quot;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s">&quot;www\.example\.com&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">HostHandler</span><span class="p">(</span><span class="n">RequestHandler</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Application</span><span class="p">([])</span>
+<span class="n">Route</span><span class="o">.</span><span class="n">routes</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav">
+      
+        <p>
+        «&#160;&#160;<a href="caching.html">Caching asynchronous methods</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer">
+        &copy; Copyright 2011, Daniel Truemper.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

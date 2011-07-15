@@ -2,7 +2,7 @@
 .. vim: set tw=80 :
 .. include:: globals.rst
 
-A caching decorator
-===================
+Caching asynchronous methods
+============================
 
 .. automodule:: tornadotools.caching

@@ -11,14 +11,23 @@ smaller tools for working with |tornado|.
 Any issues_, pull requests or the like is very welcome! Fork the repository at
 Github_.
 
-Contents:
+Libraries
+=========
 
 .. toctree::
    :maxdepth: 1
 
    adisp
-   caching
    mongrel2
+
+Decorators
+==========
+
+.. toctree::
+   :maxdepth: 1
+
+   caching
+   route
 
 Indices and tables
 ==================
