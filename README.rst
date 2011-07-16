@@ -1,4 +1,7 @@
 .. _Tornado: http://www.tornadoweb.org
+.. _adisp: https://launchpad.net/adisp
+.. _Mongrel2Handler: http://truemped.github.com/tornadotools/mongrel2.html
+.. _documentation: http://truemped.github.com/tornadotools
 
 Tornado Tools
 =============
