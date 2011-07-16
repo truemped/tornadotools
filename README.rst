@@ -1,6 +1,5 @@
 .. _Tornado: http://www.tornadoweb.org
 .. _adisp: https://launchpad.net/adisp
-.. _Mongrel2 Handler: http://truemped.github.com/tornadotools/mongrel2.html
 .. _documentation: http://truemped.github.com/tornadotools
 
 Tornado Tools
@@ -12,7 +11,7 @@ for my work with Tornado_.
 Basically there are two types of code in here:
 
 1. Libraries. Some are simply collected (like adisp_), some are selfwritten
-    (like the `Monrel2 Handler`_)
+    (like the `Monrel2 Handler <http://truemped.github.com/tornadotools/mongrel2.html>`_)
 2. Python decorators. Mostly they are little code snippets doing something
     useful and enhancing Tornado_ in a (hopefully) useful way.
 
