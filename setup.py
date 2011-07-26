@@ -19,7 +19,7 @@
 import os
 from setuptools import setup, find_packages
 
-tests_require = ['coverage>=3.4']
+tests_require = ['coverage>=3.4', 'tornado_pyvows']
 
 setup(
     name = "tornadotools",
