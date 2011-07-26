@@ -1,2 +1,5 @@
+include README.rst
+include LICENSE
+include AUTHORS
 recursive-include tornadotools *.py
 recursive-include test *.py

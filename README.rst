@@ -15,6 +15,7 @@ Basically there are two types of code in here:
 2. Python decorators. Mostly they are little code snippets doing something
     useful and enhancing Tornado_ in a (hopefully) useful way.
 
+Detailed usage is can be found in the documentation_.
 
 Getting started with the code
 =============================

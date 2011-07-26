@@ -16,6 +16,7 @@
 # limitations under the License.
 # under the License.
 #
+import os
 from setuptools import setup, find_packages
 
 tests_require = ['coverage>=3.4']
@@ -27,6 +28,14 @@ setup(
     author = "Daniel Truemper",
     author_email = "trueped@googlemail.com",
     url = "https://github.com/truemped/tornadotools",
+    license = "Apache 2.0",
+    long_description = file(
+        os.path.join(
+            os.path.dirname(__file__),
+            'README.rst'
+        )
+    ).read(),
+
     packages = find_packages(),
     include_package_data = True,
     test_suite = 'nose.collector',
