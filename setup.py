@@ -26,7 +26,7 @@ setup(
     version = '0.1',
     description = "A set of tools for working with tornado",
     author = "Daniel Truemper",
-    author_email = "trueped@googlemail.com",
+    author_email = "truemped@googlemail.com",
     url = "https://github.com/truemped/tornadotools",
     license = "Apache 2.0",
     long_description = file(
