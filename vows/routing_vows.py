@@ -29,7 +29,7 @@ class TestHandler1(RequestHandler):
         self.finish("Handler1")
 
 
-@Route(r"/test2", name="wohaa")
+@Route(r"/test2/?", name="wohaa")
 class TestHandler2(RequestHandler):
     def get(self):
         self.finish("Handler2")
@@ -60,5 +60,13 @@ class RoutingDecorator(TornadoContext):
         def hasHttpCode200(self, topic):
             expect(topic.code).to_equal(200)
 
-        def bodyShouldBeHandler1(self, topic):
+        def bodyShouldMatch(self, topic):
             expect(topic.body).to_equal("Handler1")
+
+    class Handler2(Handler1):
+
+        def topic(self):
+            return self._get("/test2")
+
+        def bodyShouldMatch(self, topic):
+            expect(topic.body).to_equal("Handler2")
