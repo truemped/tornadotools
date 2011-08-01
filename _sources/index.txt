@@ -19,6 +19,7 @@ Libraries
 
    adisp
    mongrel2
+   forms
 
 Decorators
 ==========
