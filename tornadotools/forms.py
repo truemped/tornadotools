@@ -17,6 +17,36 @@
 # under the License.
 #
 #
+"""
+.. _WTForms: http://wtforms.simplecodes.com/
+
+A simple wrapper for WTForms_.
+
+Basically we only need to map the request handler's `arguments` to the 
+`wtforms.form.Form` input. Quick example::
+
+    from wtforms import TextField, validators
+    from tornadotools.forms import Form
+
+    class SampleForm(Form):
+        username = TextField('Username', [
+            validators.Length(min=4, message="Too short")
+            ])
+
+        email = TextField('Email', [
+            validators.Length(min=4, message="Not a valid mail address"),
+            validators.Email()
+            ])
+
+Then, in the `RequestHandler`::
+
+    def get(self):
+        form = SampleForm(self)
+        if form.validate():
+            # do something with form.username or form.email
+            pass
+        self.render('template.html', form=form)
+"""
 from wtforms import Form
 
 
