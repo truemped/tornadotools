@@ -47,6 +47,7 @@ setup(
     extras_require = {
         'test': tests_require,
         'mongrel2': ['pyzmq>=2.1.7','tnetstring>=0.2.0'],
+        'forms': ['wtforms>=0.6.3'],
     },
     entry_points = {
         'console_scripts' : [
