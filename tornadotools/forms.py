@@ -65,7 +65,7 @@ class TornadoInputWrapper(object):
         return (name in self._handler.request.arguments)
 
     def getlist(self, name):
-        return self._handler.request.arguments[name]
+        return self._handler.get_arguments(name)
 
 
 class Form(Form):
