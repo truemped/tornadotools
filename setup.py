@@ -23,7 +23,7 @@ tests_require = ['coverage>=3.4', 'tornado_pyvows']
 
 setup(
     name = "tornadotools",
-    version = '0.1',
+    version = '0.1.1',
     description = "A set of tools for working with tornado",
     author = "Daniel Truemper",
     author_email = "truemped@googlemail.com",
