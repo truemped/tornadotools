@@ -50,6 +50,24 @@ Then, in the `RequestHandler`::
 from wtforms import Form
 
 
+class Form(Form):
+    """
+    `WTForms` wrapper for Tornado.
+    """
+
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        """
+        Wrap the `formdata` with the `TornadoInputWrapper` and call the base
+        constuctor.
+        """
+        self._handler = formdata
+        super(Form, self).__init__(TornadoInputWrapper(formdata),
+            obj=obj, prefix=prefix, **kwargs)
+
+    def _get_translations(self):
+        return TornadoLocaleWrapper(self._handler.get_user_locale())
+
+
 class TornadoInputWrapper(object):
 
     def __init__(self, handler):
@@ -68,15 +86,13 @@ class TornadoInputWrapper(object):
         return self._handler.get_arguments(name)
 
 
-class Form(Form):
-    """
-    `WTForms` wrapper for Tornado.
-    """
+class TornadoLocaleWrapper(object):
 
-    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        """
-        Wrap the `formdata` with the `TornadoInputWrapper` and call the base
-        constuctor.
-        """
-        super(Form, self).__init__(TornadoInputWrapper(formdata),
-            obj=obj, prefix=prefix, **kwargs)
+    def __init__(self, locale):
+        self.locale = locale
+
+    def gettext(self, message):
+        return self.locale.translate(message)
+
+    def ngettext(self, message, plural_message, count):
+        return self.locale.translate(message, plural_message, count)
