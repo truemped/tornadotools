@@ -40,8 +40,8 @@ setup(
     include_package_data = True,
     test_suite = 'nose.collector',
     install_requires = [
-        'tornado==2.1',
-        'pycurl==7.19.0',
+        'tornado>=2.0',
+        'pycurl>=7.19.0',
     ],
     tests_require = tests_require,
     extras_require = {
