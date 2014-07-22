@@ -21,6 +21,10 @@ from setuptools import setup, find_packages
 
 tests_require = ['coverage>=3.4', 'tornado_pyvows']
 
+with open(os.path.join(os.path.dirname(__file__), 'README.rst'),
+          'r') as f:
+    readme_content = f.read()
+
 setup(
     name = "tornadotools",
     version = '0.2.1',
@@ -29,13 +33,7 @@ setup(
     author_email = "truemped@googlemail.com",
     url = "https://github.com/truemped/tornadotools",
     license = "Apache 2.0",
-    long_description = file(
-        os.path.join(
-            os.path.dirname(__file__),
-            'README.rst'
-        )
-    ).read(),
-
+    long_description = readme_content,
     packages = find_packages(),
     include_package_data = True,
     test_suite = 'nose.collector',
