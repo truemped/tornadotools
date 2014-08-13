@@ -27,7 +27,7 @@ with open(os.path.join(os.path.dirname(__file__), 'README.rst'),
 
 setup(
     name = "tornadotools",
-    version = '0.2.1',
+    version = '0.2.2',
     description = "A set of tools for working with tornado",
     author = "Daniel Truemper",
     author_email = "truemped@googlemail.com",
